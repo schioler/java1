@@ -1,0 +1,61 @@
+package dk.schioler.economy.in.parser;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import dk.schioler.economy.Line;
+import dk.schioler.economy.in.AccountMatcher;
+
+public abstract class ParserBase implements Parser {
+   static final Logger LOG = Logger.getLogger(ParserBase.class);
+
+   @Autowired
+   private AccountMatcher accountMatcher;
+
+   public Line parse(String owner, String origin, String line) {
+      LOG.debug("owner=" + owner + ", origin=" + origin + ", line=" + line);
+      String separator = getSeparator();
+      String[] fields = line.split(separator);
+      Line retVal = null;
+
+      if (includeLineInOutput(fields)) {
+         BigDecimal amount = getAmount(fields);
+
+         String text = getText(fields);
+
+         long accountId = accountMatcher.matchText(text);
+         Date lineDate = getDate(fields);
+
+         retVal = new Line(0, accountId, owner, origin, lineDate, text, amount, null);
+
+      }
+      return retVal;
+   }
+
+   /*
+    * Pt only positive numbers. There may also occur other criteria at some
+    * point
+    */
+   protected boolean includeLineInOutput(String[] line) {
+      boolean include = false;
+
+      BigDecimal amount = getAmount(line);
+
+      if (amount.floatValue() < 0F) {
+         include = true;
+      }
+
+      return include;
+   }
+
+   protected abstract BigDecimal getAmount(String[] fields);
+
+   protected abstract String getText(String[] fields);
+
+   protected abstract Date getDate(String[] fields);
+
+   protected abstract String getSeparator();
+}

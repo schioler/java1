@@ -1,0 +1,55 @@
+package net.ujasiri.jee.prof.log.util;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
+
+public class LogLevelsToHTTPCodes {
+   public static int buildStatus(String l) {
+      int level = -1;
+      if ("DEBUG".equalsIgnoreCase(l)) {
+         level = 200;
+      } else if ("INFO".equalsIgnoreCase(l)) {
+         level = 200;
+      } else if ("WARN".equalsIgnoreCase(l)) {
+         level = 200;
+      } else if ("Warning".equalsIgnoreCase(l)) {
+         level = 200;
+      } else if ("ERROR".equalsIgnoreCase(l)) {
+         level = 500;
+      } else if ("FATAL".equalsIgnoreCase(l)) {
+         level = 500;
+      } else {
+         throw new RuntimeException("level not recognized:" + l);
+      }
+      return level;
+   }
+
+   public static final class StatusCount {
+      public int status100 = 0;
+      public int status200 = 0;
+      public int status300 = 0;
+      public int status400 = 0;
+      public int status500 = 0;
+
+      public void updateStatus(int status) {
+         if (status >= 100 && status < 200) {
+            status100++;
+         } else if (status >= 200 && status < 300) {
+            status200++;
+         } else if (status >= 300 && status < 400) {
+            status300++;
+         } else if (status >= 400 && status < 500) {
+            status400++;
+         } else if (status >= 500) {
+            status500++;
+         }
+      }
+      @Override
+      public String toString() {
+         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+      }
+
+      
+   }
+}

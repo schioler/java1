@@ -1,0 +1,8 @@
+mysql> create database economy;
+create user 'eco_user'@'localhost' IDENTIFIED BY 'v1nt3rS0l';
+grant all privileges on *.* to 'eco_user'@'localhost' with grant option; 
+flush privileges; (not sure if needed...)
+
+login:
+[lasc@localhost ~]$ mysql -u eco_user -p economy
+

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ap="http://accountparser.economy.schioler.dk/schema"
+   targetNamespace="http://accountparser.economy.schioler.dk/schema" elementFormDefault="unqualified">
+   <complexType name="accountParserType">
+      <sequence>
+         <element name="input" type="ap:inputType" minOccurs="1" maxOccurs="1" />
+         <element name="output" type="ap:outputType" minOccurs="1" maxOccurs="1" />
+      </sequence>
+   </complexType>
+   <complexType name="inputType">
+      <sequence>
+         <element name="directory" type="ap:directoryType" minOccurs="0" maxOccurs="unbounded" />
+         <element name="file" type="ap:fileType" minOccurs="0" maxOccurs="unbounded" />
+      </sequence>
+      <attribute name="owner" type="string" use="required" />
+   </complexType>
+   
+   <complexType name="baseType">
+      <attribute name="origin" use="required">
+         <simpleType>
+            <restriction base="string">
+               <enumeration value="LånOgSparBank" />
+               <enumeration value="Nykredit" />
+            </restriction>
+         </simpleType>
+      </attribute>
+      <attribute name="path" type="string" use="required" />
+   </complexType>
+   <complexType name="fileType">
+      <complexContent>
+         <extension base="ap:baseType">
+         </extension>
+      </complexContent>
+   </complexType>
+   <complexType name="directoryType">
+      <complexContent>
+         <extension base="ap:baseType" />
+      </complexContent>
+   </complexType>
+   <!-- -->
+   <complexType name="outputType">
+      <sequence>
+         <element name="report" type="ap:reportType" minOccurs="1" maxOccurs="unbounded" />
+      </sequence>
+   </complexType>
+   <complexType name="reportType">
+      <sequence>
+         <element name="dateRange" type="ap:dateRangeType" minOccurs="1" maxOccurs="1" />
+      </sequence>
+      <attribute name="interval" use="required">
+         <simpleType>
+            <restriction base="int">
+               <minExclusive value="0" />
+               <maxInclusive value="60" />
+            </restriction>
+         </simpleType>
+      </attribute>
+      <attribute name="type" use="required">
+         <simpleType>
+            <restriction base="string">
+               <enumeration value="averagePrInterval" />
+               <enumeration value="MaxPrInterval" />
+            </restriction>
+         </simpleType>
+      </attribute>
+   </complexType>
+   <complexType name="dateRangeType">
+      <attribute name="startDate" type="dateTime" use="required">
+         <annotation>
+            <documentation>The dateTime is specified in the following form YYYY-MM-DDThh:mm:ss where: YYYY indicates the year MM
+               indicates the month DD indicates the day T indicates the start of the required time section hh indicates the hour
+               mm indicates the minute ss indicates the second Note: All components are required! Ex: 2002-05-30T09:00:00
+            </documentation>
+         </annotation>
+      </attribute>
+      <attribute name="endDate" type="dateTime" use="required">
+         <annotation>
+            <documentation>The dateTime is specified in the following form YYYY-MM-DDThh:mm:ss where: YYYY indicates the year MM
+               indicates the month DD indicates the day T indicates the start of the required time section hh indicates the hour
+               mm indicates the minute ss indicates the second Note: All components are required! Ex: 2002-05-30T09:00:00
+            </documentation>
+         </annotation>
+      </attribute>
+   </complexType>
+   <!-- -->
+   <element name="account-parser" type="ap:accountParserType" />
+</schema>

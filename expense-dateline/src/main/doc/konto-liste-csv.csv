@@ -1,0 +1,100 @@
+Cat	Grp	Acc	
+1			Bolig
+	1		Faste
+		1	lån
+		2	husforsikring
+		3	Renovation
+		4	Skortstensfejer
+		5	Grundejer
+		6	Ejendomsskat
+		7	ejendomsværdiskat
+		8	indboforsikring
+		9	Opmagasinering
+		10	Husleje
+			
+	2		Forbrug
+		1	gas
+		2	vand
+		3	el
+			
+	3		Reparation
+		1	tag
+		2	hus
+		3	installationer
+			
+	4		Indkøb + div
+		1	indretning
+		2	hjælpemidler
+		3	materialer
+		4	Flytning
+			
+2			Bil
+	1		Faste
+		1	forsikring
+		2	crm
+		3	autohjælp
+			
+	2		Forbrug
+		1	benzin
+		2	parkering
+			
+	3		Værksted
+		1	Service
+		2	Reparation
+	4		Øvrige
+		1	Syn
+			
+3			Øvrige
+	1		Fagforening
+		1	Prosa
+	2		TV
+		1	Licens
+		2	Netflix
+		3	Tv2
+		4	Viaplay
+		5	HBO
+		6	Yousee
+			
+	3		Mobiltlf
+			
+	4		Net
+			
+	5		Bank
+		1	SU-lån
+		2	andre renter/gebyr 
+			
+	6		Underholdning
+		1	bøger
+		2	biograf
+		3	teater
+		4	koncert/musik
+			
+			
+	7		Sundhed
+		1	Apotek
+		2	Psykolog
+		3	Zone
+		4	Træning 
+		5	Fys
+		6	Tandlæge
+		7	Osteopat
+		8	Frisør
+		9	Optiker
+	8		Ferie
+			
+	9		Div
+			
+	10		Gadget
+		1	Foto
+		2	Musik
+		3	Computer
+			
+4			Leve
+	1		Mad
+		1	dagligvare
+	2		Tøj
+		1	
+	3		Cafe/rest
+		1	Cafe/bar
+		2	restaurant
+		3	take-away

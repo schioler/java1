@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/jee/!svn/ver/29/log-parser/src/main/java/net/ujasiri/jee/prof/log/util
+END
+Environment.java
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/jee/!svn/ver/29/log-parser/src/main/java/net/ujasiri/jee/prof/log/util/Environment.java
+END
+Log4JLoader.java
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/jee/!svn/ver/38/log-parser/src/main/java/net/ujasiri/jee/prof/log/util/Log4JLoader.java
+END
+LogLevelsToHTTPCodes.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/jee/!svn/ver/38/log-parser/src/main/java/net/ujasiri/jee/prof/log/util/LogLevelsToHTTPCodes.java
+END
+Util.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/jee/!svn/ver/38/log-parser/src/main/java/net/ujasiri/jee/prof/log/util/Util.java
+END

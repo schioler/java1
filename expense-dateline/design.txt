@@ -1,0 +1,62 @@
+Description:
+- Compare your actual expenses with your budget as you go along.
+- Determine how much is actually needed each month/day/.. based on actual figures.
+- What is the minimum avg amount that is required? 
+- Get in a better touch with the money you spend.
+- handle multiple users.
+
+- Storage
+Data is kept in database, handled by persistancemanager
+unique key: date+text+amount. Hopefully managed by database
+- Input:
+   Any file with accounting/transaction lines
+   
+- Data:
+-- Stamdata: 
+text to account map. 
+
+-- Linedata
+Handled in internal format:
+ID 
+USER
+EXP_CATEGORY 
+EXP_GROUP
+EXP_ACCOUNT
+DATE
+TEXT
+AMOUNT
+
+- Motor:
+-- do INPUT data:
+reads inputfile, maps to internal format, determines category/group/account from text comparison, insert into database.
+if CGA not found: skipped and put in errorfile. 
+Must be re-entrant -> run same file as many times as desired
+
+-- REPORT:
+Usecase: 
+1: Avg Category Expenses for the timeperiod, in specified intervals
+   how much money have I used on housing/car/.. each month in the last year?     
+2: Avg Group Expenses for the timeperiod, in specified intervals
+   how much money have I used on housing.loan/car.gas/.. each day in the last year?
+3: Custom report 
+   Specify what CGA numbers to include in report. 
+
+Output:
+Text overview 1
+      int1  int2  int3  int3 ...
+cat1   $v    $v    $v    $v
+cat2   $v    $v    $v    $v
+
+Text overview 2
+           int1  int2  int3  int3 ...
+cat1        $v    $v    $v    $v
+cat1.grp1   $v    $v    $v    $v
+cat1.grp2   $v    $v    $v    $v
+cat2        $v    $v    $v    $v
+
+
+handle one report at a time
+Note: 
+      1: build the timeline in specified intervals
+      2: select/run through all expense entries in the period, add it to the interval.
+      3: generate the output for the interval: avg/max/min/..

@@ -1,0 +1,100 @@
+Cat	Grp	Acc	
+1			Bolig
+	1		Faste
+		1	lån
+		2	husforsikring
+		3	Renovation
+		4	Skortstensfejer
+		5	Grundejer
+		6	Ejendomsskat
+		7	ejendomsværdiskat
+		8	indboforsikring
+		9	Opmagasinering
+		10	Husleje
+			
+	2		Forbrug
+		1	gas
+		2	vand
+		3	el
+			
+	3		Reparation
+		1	tag
+		2	hus
+		3	installationer
+			
+	4		Indkøb + div
+		1	indretning
+		2	hjælpemidler
+		3	materialer
+		4	Flytning
+			
+2			Bil
+	1		Faste
+		1	forsikring
+		2	crm
+		3	autohjælp
+			
+	2		Forbrug
+		1	benzin
+		2	parkering
+			
+	3		Værksted
+		1	Service
+		2	Reparation
+	4		Øvrige
+		1	Syn
+			
+3			Øvrige
+	1		Fagforening
+		1	Prosa
+	2		TV
+		1	Licens
+		2	Netflix
+		3	Tv2
+		4	Viaplay
+		5	HBO
+		6	Yousee
+			
+	3		Mobiltlf
+			
+	4		Net
+			
+	5		Bank
+		1	SU-lån
+		2	andre renter/gebyr 
+			
+	6		Underholdning
+		1	bøger
+		2	biograf
+		3	teater
+		4	koncert/musik
+			
+			
+	7		Sundhed
+		1	Apotek
+		2	Psykolog
+		3	Zone
+		4	Træning 
+		5	Fys
+		6	Tandlæge
+		7	Osteopat
+		8	Frisør
+		9	Optiker
+	8		Ferie
+			
+	9		Div
+			
+	10		Gadget
+		1	Foto
+		2	Musik
+		3	Computer
+			
+4			Leve
+	1		Mad
+		1	Dagligvare,REMA 1000,KVICKLY,IRMA,KIOSK T B,LAGKAGEHUSET,DEN RIGTIGE BAGER,DØGNETTO GENTO,METRO GLOSTRUP,BILKA,SUPERB PLANTAN,FØTEX,SUPERBRUGSEN,FÅREVEJLE SLAGTERF,SPAR ORDRUP,FAKTA,SUPERB BROSTYK,KORN BAGERI,SUPERBEST,NETTO,MEYERS BAGERI,ØKO-BAGERIET,SUPERB ASNÆS,METRO SLUSEHOLMEN,NEMLIG.COM,KIHOSKH A/S,SUPERB HALMTORVET,ALDI,INCO,CENTERBAGEREN,SLAGTER-ONLINE.DK,SUPERB VANGEDE,HELSEHUSET
+		2	Cafe/bar,DEN BLÅ HUND,MIKKELLER,BARESSO,CAFE BARTOF,VON FRESSEN,BARBAR BAR,JOE & THE JUICE,SOKKELUND,ESTATE COFFEE,DET ELEKTRISKE HJØ,BOUTIQUE LIZE,VEGA - MUSIKKENS H,CAFE SKAMMEKROGEN,KAFFESALONEN,MJ COFFEE,CAFE LEO,TRYKKERTØSEN,CAFE OSCAR,KAFFE OG ØLBAR,CAFE VOGELKOP,
+		3	Restaurant,CAFE DIVINO,THAI RESTAURANT SI,TASTE OF THAI,HEREFORD STEAK,DYREHAVEN,STICKS N SUSHI,HALIFAX,INDUS,
+		4	take-away,LYNGBY PIZZARIA,MC DONALD´S,LETZ SUSHI,MC DONALD'S,COSTA SMERALDA,COSTASMERALDA,OMAKASE,KINA GRILL,THE TACO SHOP,MAD MED MERE,PALAZZO PIZZARIA,MC DONALD´S,MCDONALD S,Z-SUSHI,,KEBABISTAN,TOSCANA DUE,JUST-EAT.DK,LA SANDWICHERIE,THE BAGEL,KING OF CHICKEN,DELIZIA PIZZA,MEKONG THAI TAKE,TACO DINER,
+		5,un-cat,D KOMPAGNIET APS,MUSIK-CONDITORIET,ARTISTKOKKEN,SALUMERIA,SACHI SUSHI,MOODFOOD,ICEQUEEN,VILDGLAD,PARADIS VESTERBRO,MAMMA CHE GELATO,CASCABEL MADHUS,ISBJØRNEN/BRAVISSI,
+   2     Tøj
+      1,LEVISTRAUSS,MAGASIN,SPORT-MASTER,LEVIS STORE  
