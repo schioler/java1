@@ -1,7 +1,8 @@
 Description:
 - Compare your actual expenses with your budget as you go along.
 - Determine how much is actually needed each month/day/.. based on actual figures.
-- What is the minimum avg amount that is required? 
+   Based on actual expenses in a period, determine usage pr month grouped by account.
+- What is the minimum avg amount that is required?
 - Get in a better touch with the money you spend.
 - handle multiple users.
 
@@ -10,16 +11,16 @@ Data is kept in database, handled by persistancemanager
 unique key: date+text+amount. Hopefully managed by database
 - Input:
    Any file with accounting/transaction lines
-   
+
 - Data:
--- Stamdata: 
-text to account map. 
+-- Stamdata:
+text to account map.
 
 -- Linedata
 Handled in internal format:
-ID 
+ID
 USER
-EXP_CATEGORY 
+EXP_CATEGORY
 EXP_GROUP
 EXP_ACCOUNT
 DATE
@@ -29,17 +30,17 @@ AMOUNT
 - Motor:
 -- do INPUT data:
 reads inputfile, maps to internal format, determines category/group/account from text comparison, insert into database.
-if CGA not found: skipped and put in errorfile. 
+if CGA not found: skipped and put in errorfile.
 Must be re-entrant -> run same file as many times as desired
 
 -- REPORT:
-Usecase: 
+Usecase:
 1: Avg Category Expenses for the timeperiod, in specified intervals
-   how much money have I used on housing/car/.. each month in the last year?     
+   how much money have I used on housing/car/.. each month in the last year?
 2: Avg Group Expenses for the timeperiod, in specified intervals
    how much money have I used on housing.loan/car.gas/.. each day in the last year?
-3: Custom report 
-   Specify what CGA numbers to include in report. 
+3: Custom report
+   Specify what CGA numbers to include in report.
 
 Output:
 Text overview 1
@@ -56,7 +57,7 @@ cat2        $v    $v    $v    $v
 
 
 handle one report at a time
-Note: 
+Note:
       1: build the timeline in specified intervals
       2: select/run through all expense entries in the period, add it to the interval.
       3: generate the output for the interval: avg/max/min/..
