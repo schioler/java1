@@ -1,7 +1,15 @@
 Description:
 - Compare your actual expenses with your budget as you go along.
+   For a given period, see how much has been spent
+   Compare it with the budget figures for each account
 - Determine how much is actually needed each month/day/.. based on actual figures.
    Based on actual expenses in a period, determine usage pr month grouped by account.
+   For the decided timeperiod (src accounts), total expense/account should be calculated and divided with the number of days in the period. Also number of months
+   Output:
+      account tree with total, avg pr mnth, avg pr day.
+- Evaluate how much I spend for accounts
+      Could be a graph, showing the distribution, i.e. when the expenses actually take place.
+
 - What is the minimum avg amount that is required?
 - Get in a better touch with the money you spend.
 - handle multiple users.
