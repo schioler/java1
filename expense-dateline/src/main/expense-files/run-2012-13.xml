@@ -3,9 +3,9 @@
    xsi:schemaLocation="http://accountparser.economy.schioler.dk/schema ../../main/xsd/account-parser.xsd ">
    <input owner="lars">
    <!-- DoClean=true -->
-      <directory origin="LånOgSparBank" path="src/main/expense-files/lsb" />
-      <directory origin="Nykredit" path="src/main/expense-files/nykredit" />
-   
+      <directory origin="LånOgSparBank" path="src/main/expense-files/lsb/*.csv" />
+      <directory origin="Nykredit" path="src/main/expense-files/nykredit/*.csv" />
+
    </input>
    <output>
       <report interval="1" type="averagePrInterval">
