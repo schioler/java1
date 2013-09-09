@@ -2,25 +2,43 @@ use economy;
 
 drop table LINE_UNMATCHED;
 drop table LINE;
-drop table PATTERN_MATCH;
+drop table PATTERN;
 drop table ACCOUNT;
+drop table USERT;
+
+CREATE TABLE USERT (
+  ID int NOT NULL AUTO_INCREMENT,
+  TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  NAME varchar(300) not NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY user_unique (name)
+) ENGINE=INNODB;
 
 CREATE TABLE ACCOUNT (
-  ID int NOT NULL,
+  ID int NOT NULL AUTO_INCREMENT,
+  USER_ID INT NOT NULL,
   PARENT_ID int,
   TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  TYPE varchar(5) not NULL,
   NAME varchar(400) not NULL,
-   PRIMARY KEY (id)
+  PATH varchar(600),
+  LEVEL int not null,
+  AVG set('Y','N') not null,
+  REGULAR set('Y','N') not null,
+   PRIMARY KEY (id),
+   UNIQUE KEY acc_unique (user_id, name, parent_id),
+    UNIQUE KEY acc_unique_path (user_id,name, path),
+    FOREIGN KEY (USER_ID)  REFERENCES USERT(ID)  ON DELETE CASCADE
   ) ENGINE=INNODB;
 
 
- create table PATTERN_MATCH (
+ create table PATTERN (
      ID int NOT NULL AUTO_INCREMENT,
     TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ACCOUNT_ID int not null ,
     PATTERN varchar(300) not null,
+    ACCOUNT_PATH varchar(600) not null,
      PRIMARY KEY (ID),
+     UNIQUE KEY acc_unique (pattern, account_id),
      INDEX IDX_ACC (ACCOUNT_ID),
     FOREIGN KEY (ACCOUNT_ID)  REFERENCES ACCOUNT(ID)  ON DELETE CASCADE
   ) ENGINE=INNODB;
@@ -29,34 +47,31 @@ CREATE TABLE ACCOUNT (
 
 CREATE TABLE LINE (
   ID int NOT NULL AUTO_INCREMENT,
-    ACCOUNT_ID int not null ,
-
+  ACCOUNT_ID int not null ,
+  USER_ID INT NOT NULL,
   TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  EXP_OWNER varchar(30) not NULL,
   EXP_ORIGIN varchar(50) not NULL,
 
   EXP_DATE timestamp not null,
   EXP_TEXT varchar(300) not null,
   EXP_AMOUNT decimal (10,2) not null,
   PRIMARY KEY (id),
-  UNIQUE KEY exp_unique (exp_owner,EXP_ORIGIN,exp_date,exp_text,exp_amount),
-  FOREIGN KEY (ACCOUNT_ID)
-        REFERENCES ACCOUNT(ID)
-        ON DELETE CASCADE
-) ENGINE=INNODB;
+  UNIQUE KEY exp_unique (user_id,EXP_ORIGIN,exp_date,exp_text,exp_amount),
+  FOREIGN KEY (ACCOUNT_ID) REFERENCES ACCOUNT(ID) ON DELETE CASCADE,
+  FOREIGN KEY (USER_ID)  REFERENCES USERT(ID)  ON DELETE CASCADE
+
+  ) ENGINE=INNODB;
 
 CREATE TABLE LINE_UNMATCHED (
   ID int NOT NULL AUTO_INCREMENT,
-  ACCOUNT_ID int ,
-
+  USER_ID INT NOT NULL,
   TS TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  EXP_OWNER varchar(30) not NULL,
   EXP_ORIGIN varchar(50) not NULL,
-
   EXP_DATE timestamp not null,
   EXP_TEXT varchar(300) not null,
   EXP_AMOUNT decimal (10,2) not null,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  FOREIGN KEY (USER_ID)  REFERENCES USERT(ID)  ON DELETE CASCADE
 
 ) ENGINE=INNODB;
 

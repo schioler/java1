@@ -1,0 +1,32 @@
+Reporting:
+Main Questions:
+For a given period -
+- how much money have I spent as a total?
+   - how does that add up to avg/month?
+- how are expenses distributed on regular vs non-regular
+   -> leading to "how much will have to put aside each month to maintain this setup"?
+- how much money do I spend on XX - total/avg
+
+Definitions:
+- regular expenditure is defined as an expense, that is attached to an element that does no easily change.
+   You know it's there on house, car, insurance.
+- nonRegular as opposite regular, can change - eatout, throw a party, vacation, etc.
+
+Account structure:
+- Define good/relevant categories, with required amount of sub-levels
+
+
+Issue:
+- how to place expense from same vendor in two diff accounts?
+- should there be support for diff scenarios pr user? - on same line/expense set?
+
+A: From whatever input period, calculate expenses pr month and year
+B: Generate timeline and print expenses distributed over time as graph
+
+Impl:
+B: Avg expense calculator
+
+1: generate accountstructure, with all identified accounts and ability to hold sum of expenses.
+2: accountstructure root handles start+end date
+3: accountstructure root is the entrypoint at which you add lines/expenses. The accountstructure knows how to distribute each added line.
+4: Each parent account hold the sum of it self and its children.

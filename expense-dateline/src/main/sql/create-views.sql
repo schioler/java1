@@ -1,15 +1,19 @@
 use economy;
 
-create or replace view VW_CAT_GRP_ACC as
-select
-   c.id as cat_id, c.name  as cat_name, g.id as group_id, g.name as group_name, a.id as acc_id, a.name as acc_name
-from
-   ACCOUNT AS c, ACCOUNT AS g, ACCOUNT as a
-where
-   c.id = g.parent_id and g.id = a.parent_id ;
-
-create or replace  view VW_ACCOUNT_LINE as
-select l.exp_owner, a.cat_name,a.group_name,a.acc_name,l.exp_date,l.exp_text,l.exp_amount
-from LINE l, VW_CAT_GRP_ACC a
-where l.account_id = a.acc_id
+create or replace  view vw_al as
+select l.exp_owner, a.name,a.path, l.exp_date,l.exp_text,l.exp_amount
+from LINE l, ACCOUNT a
+where l.account_id = a.id
 order by l.exp_date;
+
+create or replace  view vw_ap as
+select a.id as a_id, a.name, a.path, pm.id as p_id, pm.pattern, pm.account_path
+from ACCOUNT a, PATTERN pm
+where pm.account_id = a.id
+order by a.path, a.name;
+
+create or replace  view vw_ua as
+select u.id as u_id,u.name as u_name, a.id as a_id, a.name, a.path, a.level, a.avg, a.regular
+from ACCOUNT a, USERT u
+where u.id = a.user_id
+order by u.name, a.path;

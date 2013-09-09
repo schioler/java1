@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ap="http://accountparser.economy.schioler.dk/schema"
    targetNamespace="http://accountparser.economy.schioler.dk/schema" elementFormDefault="unqualified">
-   <complexType name="accountParserType">
+   <complexType name="accountParserType" >
       <sequence>
          <element name="input" type="ap:inputType" minOccurs="1" maxOccurs="1" />
          <element name="output" type="ap:outputType" minOccurs="1" maxOccurs="1" />
       </sequence>
+       <attribute name="owner" type="string" use="required" />
    </complexType>
    <complexType name="inputType">
       <sequence>
          <element name="directory" type="ap:directoryType" minOccurs="0" maxOccurs="unbounded" />
          <element name="file" type="ap:fileType" minOccurs="0" maxOccurs="unbounded" />
       </sequence>
-      <attribute name="owner" type="string" use="required" />
+
    </complexType>
-   
+
    <complexType name="baseType">
       <attribute name="origin" use="required">
          <simpleType>

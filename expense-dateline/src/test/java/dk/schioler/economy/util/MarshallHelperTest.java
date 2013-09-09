@@ -15,7 +15,7 @@ public class MarshallHelperTest {
 		MarshallHelper helper = (MarshallHelper) context.getBean("marshallHelper");
 		try {
 			AccountParserType userConfig = helper.loadUserConfig("src/test/resources/user-input-sample.xml");
-			System.out.println(userConfig.getInput().getOwner());
+			System.out.println(userConfig.getOwner());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

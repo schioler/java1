@@ -4,33 +4,24 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import dk.schioler.economy.Line;
-import dk.schioler.economy.in.AccountMatcher;
+import dk.schioler.economy.model.Line;
 
 public abstract class ParserBase implements Parser {
    static final Logger LOG = Logger.getLogger(ParserBase.class);
 
-   @Autowired
-   private AccountMatcher accountMatcher;
-
-   public Line parse(String owner, String origin, String line) {
-      LOG.debug("owner=" + owner + ", origin=" + origin + ", line=" + line);
+   public Line parse(Long userId, String origin, String line) {
+      LOG.debug("owner=" + userId + ", origin=" + origin + ", line=" + line);
       String separator = getSeparator();
       String[] fields = line.split(separator);
       Line retVal = null;
 
       if (includeLineInOutput(fields)) {
          BigDecimal amount = getAmount(fields);
-
          String text = getText(fields);
-
-         long accountId = accountMatcher.matchText(text);
          Date lineDate = getDate(fields);
 
-         retVal = new Line(0, accountId, owner, origin, lineDate, text, amount, null);
-
+         retVal = new Line(-1, -1, userId, origin, lineDate, text, amount, null);
       }
       return retVal;
    }

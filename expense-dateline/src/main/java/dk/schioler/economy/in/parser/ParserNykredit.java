@@ -32,7 +32,7 @@ public class ParserNykredit extends ParserBase {
 
    @Override
    protected BigDecimal getAmount(String[] fields) {
-      String amount = fields[IDX_AMOUNT];
+      String amount = fields[IDX_AMOUNT].replace("\"", "");
       // LOG.debug("amount=" + amount);
       BigDecimal bd = null;
       try {
@@ -50,13 +50,14 @@ public class ParserNykredit extends ParserBase {
       return fields[IDX_DESCRIPTION];
    }
 
-   SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy" );
+   SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 
    @Override
    protected Date getDate(String[] fields) {
       Date parse = null;
       try {
-         parse = sdf.parse(fields[IDX_DATE]);
+         String dStr = fields[IDX_DATE];
+         parse = sdf.parse(dStr.replace("\"", ""));
       } catch (ParseException e) {
          e.printStackTrace();
       }
@@ -65,7 +66,8 @@ public class ParserNykredit extends ParserBase {
 
    protected boolean includeLineInOutput(String[] line) {
       boolean include = false;
-      if (!(line[0].startsWith("Dato"))) {
+      String l = line[0].replace("\"", "");
+      if (!(l.startsWith("Dato")) && !(l.startsWith("Konto"))&& !(l.startsWith("Data"))) {
          include = super.includeLineInOutput(line);
       }
       return include;

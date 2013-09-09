@@ -5,7 +5,7 @@ import java.util.Locale;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import dk.schioler.economy.in.DoExpensesInput;
+import dk.schioler.economy.command.DoExpensesInput;
 import dk.schioler.economy.util.Log4JLoader;
 import dk.schioler.economy.util.SpringFrameworkHelper;
 
@@ -24,7 +24,6 @@ public class DoExpenseInputMain {
          doInput.readUserFile(args[0]);
          doInput.establishInputFiles();
          doInput.persistFiles();
-         // doInput.
       } catch (Exception e) {
          // TODO Auto-generated catch block
          e.printStackTrace();
@@ -33,7 +32,7 @@ public class DoExpenseInputMain {
       }
       /*
        * Load account plan
-       * 
+       *
        * for each file for each line parse determine category/group/account if
        * found -> write to database else -> write to errorfile
        */

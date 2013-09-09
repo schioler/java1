@@ -1,8 +1,8 @@
 package dk.schioler.economy.in.parser;
 
-import dk.schioler.economy.Line;
+import dk.schioler.economy.model.Line;
 
 public interface Parser {
-	public Line parse(String owner, String origin, String string);
+	public Line parse(Long userId, String origin, String string);
 
 }
