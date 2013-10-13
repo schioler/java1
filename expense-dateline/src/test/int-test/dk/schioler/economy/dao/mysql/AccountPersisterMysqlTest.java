@@ -8,9 +8,11 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 
+import dk.schioler.economy.ExpenseException;
 import dk.schioler.economy.model.Account;
 import dk.schioler.economy.model.Pattern;
 import dk.schioler.economy.model.User;
+import dk.schioler.economy.model.Account.Type;
 import dk.schioler.economy.persister.AccountPersister;
 import dk.schioler.economy.persister.PatternPersister;
 import dk.schioler.economy.persister.UserPersister;
@@ -33,7 +35,7 @@ public class AccountPersisterMysqlTest {
       AccountPersister accPersister = (AccountPersister) springCtx.getBean("accountPersister");
 
       String username = "test.user";
-      String accName = "test.accountName";
+      String accName = "aName";
       User u = null;
       Account a = null;
       try {
@@ -45,27 +47,41 @@ public class AccountPersisterMysqlTest {
             u = user;
          }
 
-         a = new Account(null, null, u.getId(), accName+"1", "", 0, true, true, null);
+
+         a = new Account(null, Account.ROOT, u.getId(), accName+"1", Type.REGULAR, null);
          a = accPersister.createAccount(a);
          Account retrievedAccount = a.getAccount(a.getId());
          assertEquals(true, retrievedAccount.isRegular());
-         assertEquals(true, retrievedAccount.isUseInAverage());
+
          LOG.debug(a);
 
-         a = new Account(null, null, u.getId(), accName+"2", "", 0, false, true, null);
-         a = accPersister.createAccount(a);
-         retrievedAccount = a.getAccount(a.getId());
+         Account a2 = new Account(null, a, u.getId(), accName+"2",  Type.REGULAR, null);
+
+         a2 = accPersister.createAccount(a2);
+         retrievedAccount = a2.getAccount(a2.getId());
          assertEquals(true, retrievedAccount.isRegular());
-         assertEquals(false, retrievedAccount.isUseInAverage());
+         assertEquals(a2.getParent().getId(), a.getId() );
          LOG.debug(a);
 
-         a = new Account(null, null, u.getId(), accName+"3", "", 0, true, false, null);
+         a = new Account(null, a2, u.getId(), accName+"3",Type.NON_REGULAR, null);
          a = accPersister.createAccount(a);
          retrievedAccount = a.getAccount(a.getId());
          assertEquals(false, retrievedAccount.isRegular());
-         assertEquals(true, retrievedAccount.isUseInAverage());
          LOG.debug(a);
 
+
+         Account acc1 = new Account(null, Account.ROOT, u.getId(), "noParent-id",Type.NON_REGULAR, null);
+         Account acc2 = new Account(null, acc1, u.getId(), "pop",Type.NON_REGULAR, null);
+         Account acc3 = new Account(null, acc2, u.getId(), "poppedreng",Type.NON_REGULAR, null);
+
+         accPersister.createAccount(acc3);
+
+         try {
+            accPersister.createAccount(acc1);
+            fail("no expected");
+         } catch (ExpenseException e) {
+            LOG.debug("expectedd exception...");
+         }
       } catch (Exception e) {
          LOG.error(e.getMessage(), e);
          fail(e.getMessage());

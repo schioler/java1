@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 import dk.schioler.economy.model.Pattern;
 import dk.schioler.economy.model.User;
 
-@Component("accountMatcherNoUse")
-public class AccountMatcherMysql implements AccountMatcher {
+public class AccountMatcherMysql   {
    private static final Logger LOG = Logger.getLogger(AccountMatcherMysql.class);
    @Autowired
    JdbcTemplate jdbcTemplate;
@@ -36,8 +35,9 @@ public class AccountMatcherMysql implements AccountMatcher {
 
    private static final class PatternMapper implements RowMapper<Pattern> {
       public Pattern mapRow(ResultSet rs, int rowNum) throws SQLException {
-         Pattern pm = new Pattern(rs.getLong("id"), rs.getLong("account_id"), rs.getString("pattern"), null);
-         return pm;
+//         Pattern pm = new Pattern(rs.getLong("id"), rs.getLong("account_id"), rs.getString("pattern"), null);
+//         return pm;
+         return null;
       }
    }
 

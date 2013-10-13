@@ -13,7 +13,7 @@ public class VisitorGetLeafAccounts implements Visitor {
 
    public boolean visit(Account element) {
       Log.debug(element);
-      if (element.getChildAccounts().size() == 0) {
+      if (element.getChildren().size() == 0) {
 
          leafAccounts.add(element);
       }

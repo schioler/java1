@@ -9,8 +9,9 @@ public class VisitorAccountsAsList implements Visitor {
 
    List<Account> asList = new ArrayList<Account>();
 
-   public boolean visit(Account  element) {
-      asList.add(element);
+   public boolean visit(Account element) {
+      if(!Account.ROOT_NAME.equals(element.getName()))
+         asList.add(element);
 
       return true;
    }
@@ -27,7 +28,5 @@ public class VisitorAccountsAsList implements Visitor {
    public void setAsList(List<Account> asList) {
       this.asList = asList;
    }
-
-
 
 }

@@ -4,12 +4,13 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
+
 public class Line implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private final long id;
-   private final long accountId;
+   private final Long id;
    private final Long userId;
    private final String origin;
    private final Date date;
@@ -18,18 +19,30 @@ public class Line implements Serializable {
 
    private final Date timestamp;
 
+   private final Match match;
 
-
-   public Line(long id, long accountId, Long userId, String origin, Date date, String text, BigDecimal amount, Date timestamp) {
+   public Line(Long id, Long userId, String origin, Date date, String text, BigDecimal amount, Date timestamp, Match match) {
       super();
       this.id = id;
-      this.accountId = accountId;
       this.userId = userId;
       this.origin = origin;
       this.date = date;
       this.text = text;
       this.amount = amount;
       this.timestamp = timestamp;
+      this.match = match;
+   }
+
+   public Line(Line line) {
+      super();
+      this.id = line.getId();
+      this.userId = line.getUserId();
+      this.origin = line.getOrigin();
+      this.date = new Date(line.getDate().getTime());
+      this.text = line.getText();
+      this.amount = new BigDecimal(line.getAmount().toString());
+      this.timestamp = new Date(line.getTimestamp().getTime());
+      this.match = new Match(line.getMatch());
    }
 
    public Date getDate() {
@@ -52,32 +65,46 @@ public class Line implements Serializable {
       return origin;
    }
 
-   public long getId() {
+   public Long getId() {
       return id;
-   }
-
-   public long getAccountId() {
-      return accountId;
    }
 
    public Long getUserId() {
       return userId;
    }
 
-   @Override
-   public String toString() {
-      return "Line [id=" + id + ", accountId=" + accountId + ", userId=" + userId + ", origin=" + origin + ", date=" + date + ", text=" + text
-            + ", amount=" + amount + ", timestamp=" + timestamp + "]";
+   public Long getAccountId() {
+      if (match != null)
+         return match.getAccountId();
+      return null;
+   }
+
+   public Long getFilterId() {
+      if (match != null)
+         return match.getFilterId();
+      return null;
+   }
+
+   public Long getPatternId() {
+      if (match != null)
+         return match.getPatternId();
+      return null;
+   }
+
+   public Long getMatchId() {
+      if (match != null)
+         return match.getAccountId();
+      return null;
    }
 
    @Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + (int) (accountId ^ (accountId >>> 32));
       result = prime * result + ((amount == null) ? 0 : amount.hashCode());
       result = prime * result + ((date == null) ? 0 : date.hashCode());
-      result = prime * result + (int) (id ^ (id >>> 32));
+      result = prime * result + ((id == null) ? 0 : id.hashCode());
+      result = prime * result + ((match == null) ? 0 : match.hashCode());
       result = prime * result + ((origin == null) ? 0 : origin.hashCode());
       result = prime * result + ((text == null) ? 0 : text.hashCode());
       result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
@@ -94,8 +121,6 @@ public class Line implements Serializable {
       if (getClass() != obj.getClass())
          return false;
       Line other = (Line) obj;
-      if (accountId != other.accountId)
-         return false;
       if (amount == null) {
          if (other.amount != null)
             return false;
@@ -106,7 +131,15 @@ public class Line implements Serializable {
             return false;
       } else if (!date.equals(other.date))
          return false;
-      if (id != other.id)
+      if (id == null) {
+         if (other.id != null)
+            return false;
+      } else if (!id.equals(other.id))
+         return false;
+      if (match == null) {
+         if (other.match != null)
+            return false;
+      } else if (!match.equals(other.match))
          return false;
       if (origin == null) {
          if (other.origin != null)
@@ -131,6 +164,13 @@ public class Line implements Serializable {
       return true;
    }
 
-   
+   @Override
+   public String toString() {
+      return getDate() +";  " +  StringUtils.leftPad(text, 75) + ", " + StringUtils.leftPad(amount.toString(), 10);
+   }
+
+   public Match getMatch() {
+      return match;
+   }
 
 }

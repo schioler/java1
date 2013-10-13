@@ -8,11 +8,9 @@ import dk.schioler.economy.model.Account;
 public interface AccountPersister {
    public Account createAccount(Account account);
 
-   public Account getAccount(Long userId, String path, String name);
+   public Long getAccountId(Long userId, String fullPath);
 
-   public Account getAccount(Long accountId);
-
-   // public Long getAccountId(String name, String path);
+//   public Account getAccount(Long accountId);
 
    public List<Account> getAccounts(Long userId);
 
@@ -21,4 +19,6 @@ public interface AccountPersister {
    public int deleteAllAccountsOnUser(Long userId);
 
    public AccountTreeRoot buildAccountTree(Long userId);
+
+//   public AccountTreeRoot buildAccountTreeWithPatterns(Long userId);
 }

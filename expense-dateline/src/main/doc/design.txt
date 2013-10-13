@@ -1,3 +1,48 @@
+*************************************
+investeringer
+interesseorganisationer
+restskat
+fagligge netværk
+museum
+opera
+rengøring/hækklip
+udlæg
+smykker
+transport mlm konti
+
+*************************************
+Report.
+Flyt summering til venstre, lige efter kontoliste
+Create a sum-of-all field: total on all categories etc
+Create excel writer.
+
+*************************************
+Chart:
+- One account with total/reg/nonreg/extra + average
+- ChildAccounts of one account with dynamic amount(total/reg/nonreg/extra)
+
+
+
+*************************************
+Expenses:
+TYPE:['R','N','E']
+total R+N+E
+regular R
+nonregular N
+extraordinary E
+
+*************************************
+            Total, Total/md, Regular, Reg/md, NonReg, NonReg/md, Extra, Extra/md
+Sums:
+A1
+  A11
+  A12
+    A121
+
+
+
+
+*************************************
 Description:
 - Compare your actual expenses with your budget as you go along.
    For a given period, see how much has been spent

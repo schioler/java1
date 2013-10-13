@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ap:account-parser owner="lars" xmlns:ap="http://accountparser.economy.schioler.dk/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://accountparser.economy.schioler.dk/schema ../../../main/xsd/account-parser.xsd ">
-  <input >
-      <file origin="Nykredit" path="src/test/resources/account-files/full-extracts/expenses-loen-20120800-20130812.csv" />
-      <file origin="Nykredit" path="src/test/resources/account-files/full-extracts/expenses-visa-20120800-20130812.csv" />
-      <file origin="LånOgSparBank" path="src/test/resources/account-files/full-extracts/export-lsb-loenkonto-20120701-20130815.csv" />
-       <file origin="LånOgSparBank" path="src/test/resources/account-files/full-extracts/export-lsb-visa-20120701-20130815.csv" />
-   </input>
-   <output>
-      <report interval="1" type="averagePrInterval" >
-         <dateRange  startDate="2012-06-01T00:00:00" endDate="2013-08-01T00:00:00" />
- <!--         <dateRange  startDate="2012-09-01T00:00:00" endDate="2012-09-30T00:00:00" />-->
-      </report>
-   </output>
+<ap:account-parser owner="lars"
+	xmlns:ap="http://accountparser.economy.schioler.dk/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://accountparser.economy.schioler.dk/schema ../../../main/xsd/account-parser.xsd ">
+	<input>
+		<file origin="Nykredit"
+			path="src/test/resources/account-files/full-extracts/expenses-loen-20120800-20130812.csv" />
+		<file origin="Nykredit"
+			path="src/test/resources/account-files/full-extracts/expenses-visa-20120800-20130812.csv" />
+		<file origin="LånOgSparBank"
+			path="src/test/resources/account-files/full-extracts/export-lsb-loenkonto-20120701-20130815.csv" />
+		<file origin="LånOgSparBank"
+			path="src/test/resources/account-files/full-extracts/export-lsb-visa-20120701-20130815.csv" />
+	</input>
+	<output>
+		<reports>
+			<report type="overViewCSV" outfile="myReport.csv" startDate="2012-06-01"
+				endDate="2013-08-01" />
+
+		</reports>
+	</output>
 </ap:account-parser>

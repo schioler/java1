@@ -1,4 +1,4 @@
-package dk.schioler.economy.out;
+package dk.schioler.economy.out.attic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import dk.schioler.economy.model.Account;
+import dk.schioler.economy.out.AccountRowException;
 import dk.schioler.economy.visitor.Visitor;
 
+@Deprecated
 public class VisitorBuildOutputRows implements Visitor {
    static Logger LOG = Logger.getLogger(VisitorBuildOutputRows.class);
    private final List<AccountRow> rowList = new ArrayList<AccountRow>();
@@ -22,6 +24,9 @@ public class VisitorBuildOutputRows implements Visitor {
       this.separator = separator;
    }
 
+   /**
+    * builds a grid of accoutnRows, each with
+    */
    public boolean visit(Account account) {
 //      LOG.debug(this);
       if (currentRow == rowList.size()) {

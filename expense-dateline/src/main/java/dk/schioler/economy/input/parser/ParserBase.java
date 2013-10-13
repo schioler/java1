@@ -1,4 +1,4 @@
-package dk.schioler.economy.in.parser;
+package dk.schioler.economy.input.parser;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -11,7 +11,7 @@ public abstract class ParserBase implements Parser {
    static final Logger LOG = Logger.getLogger(ParserBase.class);
 
    public Line parse(Long userId, String origin, String line) {
-      LOG.debug("owner=" + userId + ", origin=" + origin + ", line=" + line);
+      // LOG.debug("owner=" + userId + ", origin=" + origin + ", line=" + line);
       String separator = getSeparator();
       String[] fields = line.split(separator);
       Line retVal = null;
@@ -21,7 +21,9 @@ public abstract class ParserBase implements Parser {
          String text = getText(fields);
          Date lineDate = getDate(fields);
 
-         retVal = new Line(-1, -1, userId, origin, lineDate, text, amount, null);
+         //         public Line(Long id, Long userId, String origin, Date date, String text, BigDecimal amount, Date timestamp, Match match) {
+
+         retVal = new Line(null, userId, origin, lineDate, text, amount, null, null);
       }
       return retVal;
    }
@@ -49,4 +51,5 @@ public abstract class ParserBase implements Parser {
    protected abstract Date getDate(String[] fields);
 
    protected abstract String getSeparator();
+
 }

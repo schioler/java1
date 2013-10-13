@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ep="http://expenseparser.economy.schioler.dk/schema" targetNamespace="http://expenseparser.economy.schioler.dk/schema"
+	elementFormDefault="unqualified">
+	<complexType name="expenseParserConfigType">
+		<sequence>
+			<element name="user" type="ep:userType" minOccurs="1" maxOccurs="1" />
+			<element name="config" type="ep:configType" minOccurs="1" maxOccurs="1" />
+			<element name="input" type="ep:inputType" minOccurs="1" maxOccurs="1" />
+			<element name="output" type="ep:outputType" minOccurs="1" maxOccurs="1" />
+		</sequence>
+	</complexType>
+
+	<!-- *************************** -->
+	<complexType name="userType">
+		<attribute name="owner" type="string" use="required" />
+	</complexType>
+
+	<complexType name="configType">
+		<sequence>
+			<element name="account-plan" type="ep:accountFileType" minOccurs="1" maxOccurs="1" />
+			<element name="pattern-file" type="ep:patternFileType" minOccurs="1" maxOccurs="1" />
+			<element name="filter-file" type="ep:filterFileType" minOccurs="0" maxOccurs="1" />
+		</sequence>
+	</complexType>
+	<complexType name="configBaseType">
+		<attribute name="type" use="required">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value=".ods" />
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute name="name" use="required" type="string" />
+	</complexType>
+	<complexType name="accountFileType">
+		<complexContent>
+			<extension base="ep:configBaseType" />
+		</complexContent>
+	</complexType>
+	<complexType name="patternFileType">
+		<complexContent>
+			<extension base="ep:configBaseType" />
+		</complexContent>
+
+	</complexType>
+	<complexType name="filterFileType">
+		<complexContent>
+			<extension base="ep:configBaseType" />
+		</complexContent>
+	</complexType>
+	<!-- *************************** -->
+	<complexType name="inputType">
+
+		<sequence>
+			<element name="directory" type="ep:directoryType" minOccurs="0" maxOccurs="unbounded" />
+			<element name="file" type="ep:fileType" minOccurs="0" maxOccurs="unbounded" />
+		</sequence>
+	</complexType>
+	<complexType name="inputBaseType">
+		<attribute name="origin" use="required">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="LånOgSparBank" />
+					<enumeration value="Nykredit" />
+					<enumeration value="DanskeBank" />
+				</restriction>
+			</simpleType>
+		</attribute>
+
+		<attribute name="suffix" type="string" use="required" />
+		<attribute name="path" type="string" use="required" />
+	</complexType>
+	<complexType name="fileType">
+		<complexContent>
+			<extension base="ep:inputBaseType"></extension>
+		</complexContent>
+	</complexType>
+	<complexType name="directoryType">
+		<complexContent>
+			<extension base="ep:inputBaseType" />
+		</complexContent>
+	</complexType>
+
+	<!-- *************************** -->
+	<complexType name="outputType">
+		<sequence>
+			<element name="report" type="ep:reportType" minOccurs="0" maxOccurs="unbounded" />
+		</sequence>
+	</complexType>
+	<complexType name="reportType">
+		<sequence>
+			<element name="data" type="ep:dataType" minOccurs="1" maxOccurs="unbounded" />
+		</sequence>
+		<attribute name="report-name" use="required" type="string" />
+		<attribute name="startDate" use="required" type="date" />
+		<attribute name="endDate" use="required" type="date" />
+		<attribute name="output-directory" type="string" use="required" />
+	</complexType>
+
+	<complexType name="dataType">
+		<sequence>
+			<element name="chart" type="ep:chartType" minOccurs="0" maxOccurs="unbounded" />
+			<element name="csv" type="ep:CSVType" minOccurs="0" maxOccurs="unbounded" />
+		</sequence>
+
+		<attribute name="account" type="string" default="all-base" />
+		<attribute name="countLevels" type="int" use="optional" default="1" />
+	</complexType>
+	<complexType name="outputBaseType">
+
+	</complexType>
+	<complexType name="chartType">
+		<attribute name="type" use="required">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="timeseries" />
+					<enumeration value="bar" />
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute name="chart-data-type" default="regular">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="total" />
+					<enumeration value="regular" />
+					<enumeration value="nonregular" />
+					<enumeration value="extraordinaire" />
+					<enumeration value="ALL" />
+				</restriction>
+			</simpleType>
+		</attribute>
+	</complexType>
+	<complexType name="CSVType">
+		<attribute name="type" use="required">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="fullCSVReport" />
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute name="csv-data-type" default="ALL">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="ALL" />
+				</restriction>
+			</simpleType>
+		</attribute>
+	</complexType>
+
+
+	<complexType name="dateRangeType">
+		<attribute name="startDate" type="dateTime" use="required">
+			<annotation>
+				<documentation>The dateTime is specified in the following form
+					YYYY-MM-DDThh:mm:ss where: YYYY indicates the year MM
+					indicates the month DD
+					indicates the day T indicates the start of the
+					required time section hh indicates the hour
+					mm indicates the minute ss indicates the second Note:
+					All components
+					are required! Ex: 2002-05-30T09:00:00
+				</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="endDate" type="dateTime" use="required">
+			<annotation>
+				<documentation>The dateTime is specified in the following form
+					YYYY-MM-DDThh:mm:ss where: YYYY indicates the year MM
+					indicates the month DD
+					indicates the day T indicates the start of the
+					required time section hh indicates the hour
+					mm indicates the minute ss indicates the second Note:
+					All components
+					are required! Ex: 2002-05-30T09:00:00
+				</documentation>
+			</annotation>
+		</attribute>
+	</complexType>
+	<!-- -->
+	<element name="expense-parser" type="ep:expenseParserConfigType" />
+</schema>

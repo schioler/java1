@@ -4,71 +4,137 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import dk.schioler.economy.ExpenseException;
 import dk.schioler.economy.visitor.Visitor;
 
 public class Account implements Serializable, Comparable<Account> {
    private static final Logger LOG = Logger.getLogger(Account.class);
 
+   public static final String ROOT_NAME = "AQWERTYUIOPLKJNEVERHAPPEN";
+   public static final Account ROOT = new Account(Long.valueOf("0"), null, null, ROOT_NAME, null, null);;
    public static final String PATH_SEPARATOR = "/";
+   public static final String TYPE_REGULAR = "R";
+   public static final String TYPE_NON_REGULAR = "N";
+   public static final String TYPE_EXTRAORDINAIRE = "E";
+   public static final String TYPE_ALL = "A";
+
+   public enum Type {
+      REGULAR, NON_REGULAR, EXTRAORDINAIRE
+   };
 
    private static final long serialVersionUID = 1L;
 
-   private final Long id;
-   private final Long parentId;
+   private Long id;
+
+   private Account parent;
    private Long userId;
    private final String name;
-   private final String path;
    private final int level;
-   private final boolean useInAverage;
-   private final boolean isRegular;
+   private final Type type;
    private final Date timestamp;
 
    private final List<Pattern> patterns = new ArrayList<Pattern>();
 
-   private final List<Account> children = new ArrayList<Account>();
-
    private final List<Line> lines = new ArrayList<Line>();
 
+   private final List<Account> children = new ArrayList<Account>();
+
+   // Calculated...
    private BigDecimal expensesTotal = new BigDecimal("0");
    private BigDecimal expensesRegular = new BigDecimal("0");
    private BigDecimal expensesNonRegular = new BigDecimal("0");
-   private BigDecimal expensesForAvg = new BigDecimal("0");
-   private BigDecimal childExpenses = new BigDecimal("0");
+   private BigDecimal expensesExtra = new BigDecimal("0");
 
-   public Account(Long id, Long parentId, Long userId, String name, String path, int level, boolean useInAverage, boolean isRegular, Date timestamp) {
+   public Account(Long id, Account parent, Long userId, String name, Type type, Date timestamp) {
       super();
       this.id = id;
-      this.parentId = parentId;
+      if (!ROOT_NAME.equals(name)) {
+         if (parent == null) {
+            throw new ExpenseException("ParentAccount is required....");
+         }
+      }
+      this.parent = parent;
       this.userId = userId;
       this.name = name;
-      this.path = path;
-      this.level = level;
-      this.useInAverage = useInAverage;
-      this.isRegular = isRegular;
+      //      this.path = path;
+
+      this.type = type;
       this.timestamp = timestamp;
-      this.expensesTotal = expensesTotal.setScale(2, BigDecimal.ROUND_UP);
-      this.childExpenses = childExpenses.setScale(2, BigDecimal.ROUND_UP);
+      this.expensesTotal = expensesTotal.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+      this.expensesRegular = expensesRegular.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+      this.expensesNonRegular = expensesNonRegular.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+      this.expensesExtra = expensesExtra.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+      if (parent != null) {
+         this.level = parent.getLevel() + 1;
+         parent.addChild(this);
+      } else {
+         this.level = 0;
+      }
    }
 
-   public void addPattern(Pattern pattern) {
-      patterns.add(pattern);
+   /**
+    * CopyConstructor.....
+    * @param account
+    */
+   public Account(Account account) {
+      super();
+      this.id = account.getId();
+      this.parent = account.getParent();
+      this.userId = account.getUserId();
+      this.name = account.getName();
+      //      this.path = account.getPath();
+      this.level = account.getLevel();
+      this.type = account.getType();
+      this.timestamp = account.getTimestamp() == null ? null : new Date(account.getTimestamp().getTime());
+      for (Account account2 : account.children) {
+         children.add(new Account(account2));
+      }
+      for (Line line : account.lines) {
+         lines.add(new Line(line));
+      }
+      for (Pattern pattern : account.patterns) {
+         patterns.add(new Pattern(pattern));
+      }
+      this.addToExtra(account.getExpensesExtra());
+      this.addToNonRegular(account.getExpensesNonRegular());
+      this.addToRegular(account.getExpensesRegular());
    }
 
-   public void addPatternString(String pattern) {
-      patterns.add(new Pattern(null, this.getId(), pattern, this.getFullPath()));
+   public boolean addChild(Account child) {
+      return this.children.add(child);
    }
 
-   public List<Pattern> getPatterns() {
-      return patterns;
+   public static Type getType(String aType) {
+      Type type = null;
+      if (Account.TYPE_REGULAR.equalsIgnoreCase(aType)) {
+         type = Type.REGULAR;
+      } else if (Account.TYPE_NON_REGULAR.equalsIgnoreCase(aType)) {
+         type = Type.NON_REGULAR;
+      } else if (Account.TYPE_EXTRAORDINAIRE.equalsIgnoreCase(aType)) {
+         type = Type.EXTRAORDINAIRE;
+      } else {
+         throw new ExpenseException("No type for :" + aType);
+      }
+      return type;
    }
 
-   public List<Account> getChildAccounts() {
-      return children;
+   public static String getTypeAsString(Type type) {
+      String typeStr = null;
+      if (Type.REGULAR.equals(type)) {
+         typeStr = Account.TYPE_REGULAR;
+      } else if (Type.NON_REGULAR.equals(type)) {
+         typeStr = Account.TYPE_NON_REGULAR;
+      } else if (Type.EXTRAORDINAIRE.equals(type)) {
+         typeStr = Account.TYPE_EXTRAORDINAIRE;
+      } else {
+         throw new ExpenseException("Un-known type= " + type);
+      }
+      return typeStr;
    }
 
    public Account getAccount(Long id) {
@@ -87,11 +153,11 @@ public class Account implements Serializable, Comparable<Account> {
    }
 
    public boolean accept(Visitor visitor) {
+      LOG.debug("accepting visitor. host ='" + getFullPath() + "'");
       boolean goOn = visitor.visit(this);
       if (goOn) {
          for (Account e : children) {
-            Account value = e;
-            goOn = value.accept(visitor);
+            goOn = e.accept(visitor);
             if (!goOn) {
                break;
             }
@@ -100,44 +166,55 @@ public class Account implements Serializable, Comparable<Account> {
       return goOn;
    }
 
+   public void addToNonRegular(BigDecimal amount) {
+      expensesTotal = expensesTotal.add(amount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+      expensesNonRegular = expensesNonRegular.add(amount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+   }
+
+   public void addToRegular(BigDecimal amount) {
+      expensesTotal = expensesTotal.add(amount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+      expensesRegular = expensesRegular.add(amount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+   }
+
+   public void addToExtra(BigDecimal amount) {
+      expensesTotal = expensesTotal.add(amount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+      expensesExtra = expensesExtra.add(amount).setScale(2, BigDecimal.ROUND_HALF_EVEN);
+   }
+
    public Account addLine(Line line) {
+      //      LOG.debug("addLine: this.id=" + this.getId() + ", line=" + line.getAccountId());
       Account retVal = null;
-      if (line.getAccountId() == getId()) {
-         lines.add(line);
-         LOG.debug("addLine: " + getFullPath() + ",  ExpensesTotal=" + expensesTotal + ",  ExpensesRegular=" + expensesRegular + ",  ExpensesAvg="
-               + expensesForAvg + ", line.amount=" + line.getAmount() + ", text=" + line.getText());
-         expensesTotal = expensesTotal.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
-         if (this.isRegular) {
-            expensesRegular = expensesRegular.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
+      if (line.getAccountId().equals(getId())) {
+         //         LOG.debug("trace equals");
+         if (!lines.contains(line)) {
+            lines.add(line);
+            if (isRegular()) {
+               addToRegular(line.getAmount());
+            } else if (isNonRegular()) {
+               addToNonRegular(line.getAmount());
+            } else if (isExtra()) {
+               addToExtra(line.getAmount());
+            }
+            retVal = this;
          } else {
-            expensesNonRegular = expensesNonRegular.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
+            LOG.warn("attempted to add same line again - bounce! line=" + line);
          }
-         if (this.useInAverage) {
-            expensesForAvg = expensesForAvg.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
-         }
-         LOG.debug("addLine: " + getFullPath() + ",  ExpensesTotal=" + expensesTotal + ",  ExpensesRegular=" + expensesRegular + ",  ExpensesAvg="
-               + expensesForAvg + ", line.amount=" + line.getAmount() + ", text=" + line.getText());
-         retVal = this;
       } else {
-         for (Account e : children) {
-             retVal = e.addLine(line);
+         for (Account a : children) {
+            retVal = a.addLine(line);
             if (retVal != null) {
-               expensesTotal = expensesTotal.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
-               if (retVal.isRegular) {
-                  expensesRegular = expensesRegular.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
-               } else {
-                  expensesNonRegular = expensesNonRegular.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
+               if (retVal.isRegular()) {
+                  addToRegular(line.getAmount());
+               } else if (retVal.isNonRegular()) {
+                  addToNonRegular(line.getAmount());
+               } else if (retVal.isExtra()) {
+                  addToExtra(line.getAmount());
                }
-               if (retVal.useInAverage) {
-                  expensesForAvg = expensesForAvg.add(line.getAmount()).setScale(2, BigDecimal.ROUND_UP);
-               }
-               LOG.debug("addLine: " + getFullPath() + ", wayback success. Expenses=" + expensesTotal + ", childExpenses=" + childExpenses
-                     + ", line.amount=" + line.getAmount() + ", text=" + line.getText());
                break;
             }
          }
       }
-
+      //      LOG.debug(this.getId() + ", returning: " + retVal);
       return retVal;
    }
 
@@ -149,42 +226,82 @@ public class Account implements Serializable, Comparable<Account> {
       return expensesNonRegular;
    }
 
-   public Account addAccount(Account account) {
-      // LOG.debug("addAccount:" + account + " to " + this);
-      String path = account.getPath();
-      // LOG.debug("accountPath=" + path);
-      // String thisPath = this.account.getPath();
-      // LOG.debug("thisPath=" + thisPath);
+   //   public Account addAccount(Account account) {
+   //
+   //      String thisFullPath = this.getFullPath();
+   //      if (!PATH_SEPARATOR.equals(thisFullPath)) {
+   //         thisFullPath = thisFullPath + PATH_SEPARATOR;
+   //      }
+   //
+   //      Account child = null;
+   //      if (thisFullPath.equals(accountPath)) {
+   //         child = account;
+   //         children.add(account);
+   //      } else {
+   //         for (Account entry : children) {
+   //            Account value = entry;
+   //            child = value.addAccount(account);
+   //            if (child != null) {
+   //               break;
+   //            }
+   //         }
+   //      }
+   //      return child;
+   //   }
 
-      Account child = null;
-      if (this.getFullPath().equals(path)) {
-         child = account;
-         children.add(account);
-         LOG.debug("Found parent=" + this.getFullPath() + " to " + account.getFullPath());
+   public boolean removeAccount(Account account) {
+      boolean removed = false;
 
-      } else {
-         for (Account entry : children) {
-            Account value = entry;
-            child = value.addAccount(account);
-            if (child != null) {
-               LOG.debug("Added to some child:" + account.getFullPath() + ", this:" + this.getFullPath());
+      // first immediate children..
+      for (Iterator<Account> iterator = children.iterator(); iterator.hasNext();) {
+         Account childAccount = iterator.next();
+         if (childAccount.getId().equals(account.getId())) {
+            iterator.remove();
+            removed = true;
+            break;
+         }
+      }
+      if (!removed) {
+         // now further down the line...
+         for (Iterator<Account> iterator = children.iterator(); iterator.hasNext();) {
+            Account childAccount = iterator.next();
+            removed = childAccount.removeAccount(account);
+            if (removed) {
                break;
             }
          }
       }
-      return child;
+      return removed;
+   }
+
+   public List<Long> getThisAndChildIds() {
+      List<Long> ids = new ArrayList<Long>();
+      addThisAndChildIdsTo(ids);
+      return ids;
+   }
+
+   private void addThisAndChildIdsTo(List<Long> ids) {
+      ids.add(id);
+      for (Account a : this.children) {
+         a.addThisAndChildIdsTo(ids);
+      }
+   }
+
+   public List<Account> getThisAndChildren() {
+      List<Account> accounts = new ArrayList<Account>();
+      addThisAndChildrenTo(accounts);
+      return accounts;
+   }
+
+   private void addThisAndChildrenTo(List<Account> accounts) {
+      accounts.add(this);
+      for (Account a : this.children) {
+         a.addThisAndChildrenTo(accounts);
+      }
    }
 
    public List<Line> getLines() {
       return lines;
-   }
-
-   // public BigDecimal getExpenses() {
-   // return expensesTotal;
-   // }
-
-   public BigDecimal getChildExpenses() {
-      return childExpenses;
    }
 
    public BigDecimal getExpensesTotal() {
@@ -195,16 +312,15 @@ public class Account implements Serializable, Comparable<Account> {
       return expensesRegular;
    }
 
-   public BigDecimal getExpensesForAvg() {
-      return expensesForAvg;
-   }
-
    public String getFullPath() {
-      if (StringUtils.isNotBlank(path)) {
-         return path + PATH_SEPARATOR + name;
+      if (ROOT.getName().equals(getName())) {
+         return "";
+      } else if (parent == null) {
+         return PATH_SEPARATOR + name;
       } else {
-         return name;
+         return parent.getFullPath() + PATH_SEPARATOR + name;
       }
+
    }
 
    public static String getPathSeparator() {
@@ -215,10 +331,6 @@ public class Account implements Serializable, Comparable<Account> {
       return id;
    }
 
-   public Long getParentId() {
-      return parentId;
-   }
-
    public Long getUserId() {
       return userId;
    }
@@ -227,20 +339,8 @@ public class Account implements Serializable, Comparable<Account> {
       return name;
    }
 
-   public String getPath() {
-      return path;
-   }
-
    public int getLevel() {
       return level;
-   }
-
-   public boolean isUseInAverage() {
-      return useInAverage;
-   }
-
-   public boolean isRegular() {
-      return isRegular;
    }
 
    public Date getTimestamp() {
@@ -249,21 +349,72 @@ public class Account implements Serializable, Comparable<Account> {
 
    public void setUserId(Long userId) {
       this.userId = userId;
+      if (!children.isEmpty()) {
+         for (Account a : children) {
+            a.setUserId(userId);
+         }
+      }
+   }
+
+   public void addPattern(Pattern pattern) {
+      patterns.add(pattern);
+   }
+
+   public void addPatternString(String pattern) {
+      //      throw new ExpenseException("added pattern..");
+      patterns.add(new Pattern(null, this.getUserId(), this.getId(), pattern, this.getFullPath()));
+   }
+
+   public List<Pattern> getPatterns() {
+      return patterns;
+   }
+
+   public List<String> getPatternsAsStrings() {
+
+      List<String> list = new ArrayList<String>();
+      for (Pattern p : patterns) {
+         list.add(p.getPattern());
+      }
+      return list;
+   }
+
+   public int compareTo(Account o) {
+      return this.getFullPath().compareTo(o.getFullPath());
+   }
+
+   public Type getType() {
+      return type;
+   }
+
+   public boolean isRegular() {
+      return Type.REGULAR.equals(this.getType());
+   }
+
+   public boolean isNonRegular() {
+      return Type.NON_REGULAR.equals(this.getType());
+   }
+
+   public boolean isExtra() {
+      return Type.EXTRAORDINAIRE.equals(this.getType());
+   }
+
+   public BigDecimal getExpensesExtra() {
+      return expensesExtra;
+   }
+
+   public void setId(Long id) {
+      this.id = id;
+   }
+
+   public void setParent(Account parent) {
+      this.parent = parent;
    }
 
    @Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((id == null) ? 0 : id.hashCode());
-      result = prime * result + (isRegular ? 1231 : 1237);
       result = prime * result + level;
-      result = prime * result + ((name == null) ? 0 : name.hashCode());
-      result = prime * result + ((parentId == null) ? 0 : parentId.hashCode());
-      result = prime * result + ((path == null) ? 0 : path.hashCode());
-      result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
-      result = prime * result + (useInAverage ? 1231 : 1237);
-      result = prime * result + ((userId == null) ? 0 : userId.hashCode());
       return result;
    }
 
@@ -276,54 +427,22 @@ public class Account implements Serializable, Comparable<Account> {
       if (getClass() != obj.getClass())
          return false;
       Account other = (Account) obj;
-      if (id == null) {
-         if (other.id != null)
-            return false;
-      } else if (!id.equals(other.id))
-         return false;
-      if (isRegular != other.isRegular)
-         return false;
-      if (level != other.level)
-         return false;
-      if (name == null) {
-         if (other.name != null)
-            return false;
-      } else if (!name.equals(other.name))
-         return false;
-      if (parentId == null) {
-         if (other.parentId != null)
-            return false;
-      } else if (!parentId.equals(other.parentId))
-         return false;
-      if (path == null) {
-         if (other.path != null)
-            return false;
-      } else if (!path.equals(other.path))
-         return false;
-      if (timestamp == null) {
-         if (other.timestamp != null)
-            return false;
-      } else if (!timestamp.equals(other.timestamp))
-         return false;
-      if (useInAverage != other.useInAverage)
-         return false;
-      if (userId == null) {
-         if (other.userId != null)
-            return false;
-      } else if (!userId.equals(other.userId))
+      if (!getFullPath().equals(other.getFullPath()))
          return false;
       return true;
    }
 
+   public Account getParent() {
+      return parent;
+   }
+
    @Override
    public String toString() {
-      return "Account [id=" + id + ", parentId=" + parentId + ", userId=" + userId + ", name=" + name + ", path=" + path + ", level=" + level
-            + ", useInAverage=" + useInAverage + ", isRegular=" + isRegular + ", timestamp=" + timestamp + ", patterns=" + patterns + ", children="
-            + children + ", lines=" + lines + ", expenses=" + expensesTotal + ", childExpenses=" + childExpenses + "]";
+      String parentPathString = "n/a";
+      if (parent != null) {
+         parentPathString = parent.getFullPath();
+      }
+      return "Account [id=" + id + ", name=" + name + ", parent=" + parentPathString + ", userId=" + userId + ", level=" + level + ", type=" + type + ", expensesTotal=" + expensesTotal
+            + ", expensesRegular=" + expensesRegular + ", expensesNonRegular=" + expensesNonRegular + ", expensesExtra=" + expensesExtra + "]";
    }
-
-   public int compareTo(Account o) {
-      return this.getFullPath().compareTo(o.getFullPath());
-   }
-
 }

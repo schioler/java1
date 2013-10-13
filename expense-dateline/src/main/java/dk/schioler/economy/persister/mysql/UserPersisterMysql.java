@@ -28,7 +28,7 @@ public class UserPersisterMysql implements UserPersister {
    }
 
    static final String SQL_USER_COLS = "id, name,  ts";
-   static final String SQL_USER_TABLE = "USERT";
+   static final String SQL_USER_TABLE = "USER_";
 
    static final String INSERT_USER_SQL = "insert into " + SQL_USER_TABLE + " (  name) values (?)";
 

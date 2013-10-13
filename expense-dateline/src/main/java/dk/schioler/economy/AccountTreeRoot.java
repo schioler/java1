@@ -1,74 +1,68 @@
 package dk.schioler.economy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import dk.schioler.economy.model.Account;
 import dk.schioler.economy.model.Line;
-import dk.schioler.economy.model.Pattern;
+import dk.schioler.economy.visitor.GetAccountOnFullPathVisitor;
 import dk.schioler.economy.visitor.Visitor;
 import dk.schioler.economy.visitor.VisitorAccountsAsList;
 
 public class AccountTreeRoot {
    private static final Logger LOG = Logger.getLogger(AccountTreeRoot.class);
-   private final List<Account> children = new ArrayList<Account>();
+   private final Account root;
+   private Long userId;
 
-   public void addAccountToTree(Account account) throws ParentAccountNotFoundException {
-      LOG.debug("adding account=" + account.getFullPath());
+   public AccountTreeRoot(Long userId) {
+      super();
+      this.userId = userId;
+      root = new Account(Account.ROOT);
+   }
 
-      boolean success = false;
-      if (StringUtils.isBlank(account.getPath())) {
-         children.add(account);
-         success = true;
-         LOG.debug("successful add child to this:" + this);
-      } else {
-         for (Account entry : children) {
-            Account child = entry.addAccount(account);
-            if (child != null) {
-               success = true;
-               LOG.debug(" has been added:" + account.getFullPath());
-               LOG.debug(" ");
-               break;
-            }
-         }
-      }
+   public AccountTreeRoot() {
+      root = new Account(Account.ROOT);
+   }
 
-      if (!success) {
-         throw new ParentAccountNotFoundException(account.toString());
-      }
+   public AccountTreeRoot(AccountTreeRoot root) {
+      super();
+      this.userId = root.userId;
+      this.root = new Account(root.root);
+   }
+
+   public Account getRoot() {
+      return root;
+   }
+
+   public void setUserId(Long userId) {
+      this.userId = userId;
+      root.setUserId(userId);
+   }
+
+   public int clear() {
+      int size = getAsList().size();
+      return size;
+   }
+
+   public boolean removeAccount(Account account) {
+
+      return root.removeAccount(account);
    }
 
    public Account findAccount(Long id) {
-      Account a = null;
-      for (Account account : children) {
-         a = account.getAccount(id);
-         if (a != null) {
-            break;
-         }
-      }
-
-      return a;
+      Account a = root.getAccount(id);
+        return a;
    }
 
-   public void addPattern(Pattern pattern) {
-
-   }
-
-   public class AccountTreeSize implements Visitor {
+     public static class AccountTreeDimensions {
       int maxLevel = 0;
       int countAccounts = 0;
 
-      public boolean visit(Account element) {
-         maxLevel = Math.max(maxLevel, element.getLevel());
-         return true;
-      }
-
-      public boolean init() {
-         return false;
+      public AccountTreeDimensions(int maxLevel, int countAccounts) {
+         super();
+         this.maxLevel = maxLevel;
+         this.countAccounts = countAccounts;
       }
 
       public int getMaxLevel() {
@@ -81,94 +75,46 @@ public class AccountTreeRoot {
 
    }
 
-   public AccountTreeSize getAccountTreeSize() {
-      AccountTreeSize v = new AccountTreeSize();
-      if (!children.isEmpty()) {
-         for (Account ace : children) {
-            ace.accept(v);
-         }
-      }
-      return v;
+   public AccountTreeDimensions getAccountTreeSize() {
+      VisitorBuildAccountTreeDimensions v = new VisitorBuildAccountTreeDimensions();
+      root.accept(v);
+      return v.getDimensions();
+   }
+
+   public int getAccountTreeSize(int maxLevel) {
+      VisitorBuildAccountTreeDimensionsWithMaxLevel v = new VisitorBuildAccountTreeDimensionsWithMaxLevel(maxLevel);
+      root.accept(v);
+      return v.countAccounts;
    }
 
    public Account addLine(Line line) {
-      Account retVal = null;
-      for (Account e : this.children) {
-         retVal = e.addLine(line);
-         if (retVal != null) {
-            break;
-         }
-      }
+      LOG.debug("addLine:" + line + ", root=" + root);
+      Account retVal = root.addLine(line);
+
       return retVal;
    }
 
-   public Account findAccountOnNamePath(String path) {
-      LOG.debug(path);
-      String[] split = path.split(Account.PATH_SEPARATOR);
-      Account retVal = findAccount(split, 0, children);
+   public Account findAccountOnFullPath(String path) {
+      LOG.debug("findAccountOnFullPath: path=" + path);
+      GetAccountOnFullPathVisitor visitor = new GetAccountOnFullPathVisitor(path);
+      root.accept(visitor);
 
-      return retVal;
+      return visitor.getTarget();
 
    }
 
    public List<Account> getAsList() {
       VisitorAccountsAsList va = new VisitorAccountsAsList();
-      this.accept(va);
+      //      this.accept(va);
+      root.accept(va);
       return va.getAsList();
    }
 
-   private Account findAccount(String[] path, int curIdx, List<Account> accounts) {
-      /*
-       * Find account with cur-idx name in accounts. If found: idx++,
-       * accounts.chidren and call recursively If not found: return null
-       */
-      Account retVal = null;
-      String name = path[curIdx];
-      LOG.debug(Arrays.toString(path) + ", idx=" + curIdx + ", name=" + name);
-
-      for (Account e : accounts) {
-
-         // LOG.debug(ate);
-         if (name.equals(e.getName())) {
-            if (curIdx == (path.length - 1)) {
-               // found it!
-               LOG.debug("found accoubtTreeElement:" + e);
-               retVal = e;
-               break;
-            } else {
-               int nextIdx = curIdx + 1;
-               if (nextIdx < path.length) {
-                  retVal = findAccount(path, nextIdx, e.getChildAccounts());
-                  if (retVal != null) {
-                     break;
-                  }
-               }
-            }
-         } else {
-
-         }
-      }
-
-      return retVal;
-
-   }
-
    public boolean accept(Visitor visitor) {
+      LOG.debug("acceptVisitor: " + visitor);
       boolean success = true;
-      for (Account entry : children) {
-         Account child = entry;
-         success = child.accept(visitor);
-         if (!success) {
-            break;
-         }
-      }
-
+      root.accept(visitor);
       return success;
-   }
-
-   @Override
-   public String toString() {
-      return "AccountTreeRoot [children=" + children.size() + "]";
    }
 
 }

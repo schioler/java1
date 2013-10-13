@@ -1,13 +1,10 @@
 package dk.schioler.economy.persister.mysql;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import dk.schioler.economy.model.Pattern;
@@ -20,35 +17,21 @@ public class PatternPersisterMysql implements PatternPersister {
    @Autowired
    JdbcTemplate jdbcTemplate;
 
+   static final String PATTERN_TABLE = "PATTERN";
+   static final String PATTERN_TABLE_WITH_ALIAS = PATTERN_TABLE + " p";
+   static final String PATTERN_COLS = "p.id,  p.user_id, p.account_id, p.account_path, p.pattern ";
+
+   static final String GET_MATCH_SQL = "Select " + PATTERN_COLS + " from " + PATTERN_TABLE_WITH_ALIAS + " where  p.account_id =? and p.pattern=?";
+
    public Pattern getPattern(Long accountId, String pattern) {
-      List<Pattern> accounts = jdbcTemplate.query(GET_MATCH_SQL, new PatternMatchRowMapper(), accountId, pattern);
+      List<Pattern> accounts = jdbcTemplate.query(GET_MATCH_SQL, new PatternRowMapper(), accountId, pattern);
       return accounts.get(0);
    }
 
-   // public Pattern(Long id, Long accountId, String pattern, String
-   // accountPath)
-   private static final class PatternMatchRowMapper implements RowMapper<Pattern> {
-      public Pattern mapRow(ResultSet rs, int rowNum) throws SQLException {
-         Pattern pm = new Pattern(rs.getLong("id"), rs.getLong("account_id"), rs.getString("pattern"), rs.getString("account_path"));
-         return pm;
-      }
-   }
-
-   static final String ROWS = "select p.id, p.account_id, p.account_path, p.pattern ";
-
-   static final String DELETE_MATCH_ON_USER_SQL = "DELETE FROM PATTERN where account_id in (SELECT * FROM (SELECT a.id as id FROM ACCOUNT a, PATTERN p, USERT u where a.id = p.account_id and a.user_id = u.id and u.id = ? ) as PA)";
-
-   static final String DELETE_MATCH_ON_ACCOUNT_SQL = "DELETE FROM PATTERN where account_id in (SELECT * FROM (SELECT a.id as id FROM ACCOUNT a, PATTERN p where a.id = p.account_id and a.id =? ) as PA)";
-
-   static final String INSERT_MATCH_SQL = "insert into PATTERN (account_id,pattern, account_path) values (?,?,?)";
-   static final String GET_MATCH_SQL = ROWS + " from PATTERN p where  p.account_id =? and p.pattern=?";
-
-   static final String GET_MATCH_ON_ACCOUNT_SQL = ROWS + " from PATTERN p where account_id =?";
-
-   static final String GET_MATCH_ON_USER_SQL = ROWS + " from PATTERN p, ACCOUNT a where p.account_id =a.id and a.user_id = ?";
+   static final String INSERT_PATTERN_SQL = "insert into " + PATTERN_TABLE + " (user_id, account_id,pattern, account_path) values (?, ?,?,?)";
 
    public Pattern createPattern(Long accountId, Pattern pattern) {
-      int update = jdbcTemplate.update(INSERT_MATCH_SQL, accountId, pattern.getPattern(), pattern.getAccountPath());
+      int update = jdbcTemplate.update(INSERT_PATTERN_SQL, pattern.getUserId(), accountId, pattern.getPattern(), pattern.getAccountPath());
 
       Pattern pm = null;
       if (update > 0) {
@@ -58,24 +41,32 @@ public class PatternPersisterMysql implements PatternPersister {
       return pm;
    }
 
+   static final String GET_PATTERN_ON_ACCOUNT_SQL = "Select " + PATTERN_COLS + " from " + PATTERN_TABLE_WITH_ALIAS + " where p.account_id =?";
+
    public List<Pattern> getPatternsOnAccountId(Long accountId) {
-      List<Pattern> accounts = jdbcTemplate.query(GET_MATCH_ON_ACCOUNT_SQL, new PatternMatchRowMapper(), accountId);
+      List<Pattern> accounts = jdbcTemplate.query(GET_PATTERN_ON_ACCOUNT_SQL, new PatternRowMapper(), accountId);
       return accounts;
    }
 
+   static final String DELETE_PATTERN_ON_ACCOUNT_SQL = "DELETE FROM " + PATTERN_TABLE + " where account_id =? ";
+
    public int deletePatterns(Long accountId) {
-      return jdbcTemplate.update(DELETE_MATCH_ON_ACCOUNT_SQL, accountId);
+      return jdbcTemplate.update(DELETE_PATTERN_ON_ACCOUNT_SQL, accountId);
    }
+
+   static final String DELETE_PATTERN_ON_USER_SQL = "DELETE FROM " + PATTERN_TABLE + " where user_id = ?";
 
    public int deleteAllPatternsOnUser(Long userId) {
-      return jdbcTemplate.update(DELETE_MATCH_ON_USER_SQL, userId);
+      return jdbcTemplate.update(DELETE_PATTERN_ON_USER_SQL, userId);
    }
 
+   static final String GET_PATTERN_ON_USER_SQL = "Select " + PATTERN_COLS + " from "+PATTERN_TABLE_WITH_ALIAS + " where p.user_id = ?";
    public List<Pattern> getPatternsOnUserId(Long userId) {
-      List<Pattern> patterns = jdbcTemplate.query(GET_MATCH_ON_USER_SQL, new PatternMatchRowMapper(), userId);
+      List<Pattern> patterns = jdbcTemplate.query(GET_PATTERN_ON_USER_SQL, new PatternRowMapper(), userId);
       return patterns;
    }
 
+   static final String GET_PATTERNS_ON_ACCOUNT_LIST = "Select " + PATTERN_COLS + " from "+PATTERN_TABLE_WITH_ALIAS + " where account_id in ";
    public List<Pattern> getPatternsOnAccountIdList(List<Long> accountIdList) {
       int count = accountIdList.size();
       StringBuilder accountPlaces = new StringBuilder();
@@ -87,9 +78,10 @@ public class PatternPersisterMysql implements PatternPersister {
          }
          accountPlaces.append(")");
       }
-      String sql = ROWS + " from PATTERN p where account_id in" + accountPlaces.toString();
-      LOG.debug(sql);
-      List<Pattern> query = jdbcTemplate.query(sql, new PatternMatchRowMapper(), accountIdList.toArray());
+
+      String string = GET_PATTERNS_ON_ACCOUNT_LIST  + accountPlaces.toString();
+      LOG.debug(string);
+      List<Pattern> query = jdbcTemplate.query(string, new PatternRowMapper(), accountIdList.toArray());
       return query;
    }
 }

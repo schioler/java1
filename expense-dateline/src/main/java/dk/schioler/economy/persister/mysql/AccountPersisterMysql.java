@@ -1,18 +1,14 @@
 package dk.schioler.economy.persister.mysql;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import dk.schioler.economy.AccountTreeRoot;
+import dk.schioler.economy.ExpenseException;
 import dk.schioler.economy.model.Account;
 import dk.schioler.economy.persister.AccountPersister;
 
@@ -24,107 +20,90 @@ public class AccountPersisterMysql implements AccountPersister {
    @Autowired
    JdbcTemplate jdbcTemplate;
 
-   static final String SQL_ACCOUNT_ROWS = "id, user_id, parent_id, name, path, avg, regular, level, ts";
-   static final String SQL_SELECT = "select " + SQL_ACCOUNT_ROWS + " from ACCOUNT";
+   static final String SQL_ACCOUNT_COLS = "id, user_id, parent_id, name, path,  level, atype, ts ";
+   static final String ACCOUNT_TABLE = "ACCOUNT";
 
-   static final String GET_ACCOUNT_LIST_SQL = SQL_SELECT + "  where  user_id = ? order by parent_id ";
+   static final String SQL_SELECT = "select " + SQL_ACCOUNT_COLS + " from " + ACCOUNT_TABLE;
 
-   static final String GET_ACCOUNT_ON_ID_SQL = SQL_SELECT + " where id =?";
-   static final String GET_ACCOUNT_ON_PATH_AND_NAME_SQL = SQL_SELECT + " where path =? and name=? and user_id = ?";
+   static final String GET_ACCOUNT_ON_PATH_AND_NAME_SQL = "select id from " + ACCOUNT_TABLE + " where path =? and user_id = ?";
 
-   static final String INSERT_ACCOUNT_SQL = "insert into ACCOUNT (user_id,  parent_id, name, path, avg, regular, level) values (?,?,?,?,?,?,?)";
-   static final String DELETE_ACCOUNT_ON_USER_SQL = "delete from ACCOUNT where user_id = ? ";
-   static final String DELETE_ACCOUNT_ON_ID_SQL = "delete from ACCOUNT where id = ? ";
-
-   private static final class AccountRowMapper implements RowMapper<Account> {
-      public Account mapRow(ResultSet rs, int rowNum) throws SQLException {
-         boolean avg = "y".equalsIgnoreCase(rs.getString("AVG"));
-         boolean regular = "y".equalsIgnoreCase(rs.getString("REGULAR"));
-
-         Account pm = new Account(rs.getLong("id"), rs.getLong("parent_id"), rs.getLong("user_id"), rs.getString("name"), rs.getString("path"),
-               rs.getInt("level"), avg, regular, rs.getDate("ts"));
-         return pm;
+   @Override
+   public Long getAccountId(Long userId, String fullPath) {
+      LOG.debug("userId=" + userId + ", fullPath=" + fullPath);
+      List<Long> ids = jdbcTemplate.query(GET_ACCOUNT_ON_PATH_AND_NAME_SQL, new AccountRowToIdListMapper(), fullPath, userId);
+      Long id = null;
+      if (ids.size() > 0) {
+         id = ids.get(0);
       }
+      return id;
    }
 
-   public Account getAccount(Long userId, String path, String name) {
-      LOG.debug("userId=" + userId + ", path=" + path + ", name=" + name);
-      List<Account> accounts = jdbcTemplate.query(GET_ACCOUNT_ON_PATH_AND_NAME_SQL, new AccountRowMapper(), path, name, userId);
-      Account a = null;
-      if (accounts.size() > 0) {
-         a = accounts.get(0);
-      }
-      return a;
-   }
-
-   public Account getAccount(Long accountId) {
-      List<Account> accounts = jdbcTemplate.query(GET_ACCOUNT_ON_ID_SQL, new AccountRowMapper(), accountId);
-      return accounts.get(0);
-   }
+   static final String INSERT_ACCOUNT_SQL = "insert into ACCOUNT (user_id,  parent_id, name, path, atype, level) values (?,?,?,?,?,?)";
 
    public Account createAccount(Account account) {
-      String path = account.getPath();
+      if (Account.ROOT_NAME.equals(account.getName())) {
+         throw new ExpenseException("attempt to persist ROOT account - not permitted");
+      }
+      if (account.getId() != null && account.getId().longValue() > 0) {
+         return account;
+      }
+      Account parent = account.getParent();
+      if (parent.getId() == null) {
+         parent = createAccount(parent);
 
-      Account parent = null;
-
-      if (!StringUtils.isBlank(path)) {
-         String parentPath = null;
-         String parentName = null;
-
-         int lastIndexOf = path.lastIndexOf(Account.PATH_SEPARATOR);
-         if (lastIndexOf > -1) {
-            parentPath = path.substring(0, lastIndexOf);
-            parentName = path.substring(lastIndexOf + 1);
-         } else {
-            parentPath = "";
-            parentName = path;
-         }
-         parent = getAccount(account.getUserId(), parentPath, parentName);
       }
 
       LOG.debug("parent=" + parent);
 
-      Long parentId = Long.valueOf("-1");
-      if (parent != null) {
-         parentId = parent.getId();
+      Long parentId = parent.getId();
+      String type = Account.getTypeAsString(account.getType());
+
+      int update = 0;
+      try {
+         update = jdbcTemplate.update(INSERT_ACCOUNT_SQL, account.getUserId(), parentId, account.getName(), account.getFullPath(), type, account.getLevel());
+         LOG.debug("InsertResult=" + update);
+         if (update > 0) {
+            Long id = getAccountId(account.getUserId(), account.getFullPath());
+            account.setId(id);
+         }
+         return account;
+      } catch (org.springframework.dao.DuplicateKeyException e) {
+         throw new ExpenseException(e.getMessage(), e);
       }
-      String avg = BooleanUtils.toString(account.isUseInAverage(), "Y", "N");
-      String regular = BooleanUtils.toString(account.isRegular(), "Y", "N");
-      int update = jdbcTemplate.update(INSERT_ACCOUNT_SQL, account.getUserId(), parentId, account.getName(), account.getPath(), avg, regular,
-            account.getLevel());
-      LOG.debug("InsertResult=" + update);
-      Account a = null;
-      if (update > 0) {
-         a = getAccount(account.getUserId(), account.getPath(), account.getName());
-      }
-      return a;
    }
 
-   public AccountTreeRoot buildAccountTree(Long userId) {
-      LOG.debug("Will build accountTree: userId=" + userId);
-      List<Account> accounts = getAccounts(userId);
+   int count = 0;
 
-      AccountTreeRoot root = new AccountTreeRoot();
-      for (Account account : accounts) {
-         // LOG.debug(account);
-         root.addAccountToTree(account);
-      }
-      return root;
+   public AccountTreeRoot buildAccountTree(Long userId) {
+      count++;
+      LOG.debug("*************************** Will build accountTree: frothe " + count + " time, userId=" + userId);
+
+      return getAccountTreeRoot(userId);
+   }
+
+   static final String GET_ACCOUNT_LIST_ON_USER_SQL = SQL_SELECT + "  where  user_id = ? order by parent_id ";
+
+   private AccountTreeRoot getAccountTreeRoot(Long userId) {
+      AccountRowToTreeMapper rMapper = new AccountRowToTreeMapper();
+      jdbcTemplate.query(GET_ACCOUNT_LIST_ON_USER_SQL, rMapper, userId);
+      return rMapper.getRoot();
    }
 
    public List<Account> getAccounts(Long userId) {
-      LOG.debug("getAccounts=" + userId);
-      return jdbcTemplate.query(GET_ACCOUNT_LIST_SQL, new AccountRowMapper(), userId);
+      return getAccountTreeRoot(userId).getAsList();
    }
+
+   static final String DELETE_ACCOUNT_ON_ID_SQL = "delete from ACCOUNT where id = ? ";
 
    public int deleteAccount(Long id) {
-      String delete = "delete from ACCOUNT where id =?";
-      return jdbcTemplate.update(delete, id);
+      return jdbcTemplate.update(DELETE_ACCOUNT_ON_ID_SQL, id);
    }
 
+   static final String DELETE_ACCOUNT_ON_USER_SQL = "delete from ACCOUNT where user_id = ? ";
+
    public int deleteAllAccountsOnUser(Long userId) {
-      String delete = "delete from ACCOUNT where user_id =?";
-      return jdbcTemplate.update(delete, userId);
+
+      return jdbcTemplate.update(DELETE_ACCOUNT_ON_USER_SQL, userId);
 
    }
 

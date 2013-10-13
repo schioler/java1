@@ -1,20 +1,21 @@
-package dk.schioler.economy.in.parser;
+package dk.schioler.economy.input.parser;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
+
+import dk.schioler.economy.util.Util;
 
 @Component("parserNykredit")
 public class ParserNykredit extends ParserBase {
    private static final Logger LOG = Logger.getLogger(ParserNykredit.class);
    static String separator = ";";
-
+   static final String ENCODING = "UTF-8";
    /*
     * sample: 28-06-2013;Fremmed automat i åbningstid;-8,00;N;192,98;28-06-2013;
     */;
@@ -22,13 +23,12 @@ public class ParserNykredit extends ParserBase {
    static final int IDX_DESCRIPTION = 1;
    static final int IDX_AMOUNT = 2;
 
-   NumberFormat nf = NumberFormat.getNumberInstance();
-   DecimalFormat df = (DecimalFormat) nf;
-
    @Override
    protected String getSeparator() {
       return separator;
    }
+
+   private final Locale dkLocale = new Locale("da", "DK");
 
    @Override
    protected BigDecimal getAmount(String[] fields) {
@@ -36,8 +36,7 @@ public class ParserNykredit extends ParserBase {
       // LOG.debug("amount=" + amount);
       BigDecimal bd = null;
       try {
-         Number parse = df.parse(amount);
-         bd = new BigDecimal(parse.floatValue());
+         bd = Util.createBigDecimal(amount, dkLocale);
       } catch (ParseException e) {
          LOG.error(e);
       }
@@ -47,7 +46,8 @@ public class ParserNykredit extends ParserBase {
 
    @Override
    protected String getText(String[] fields) {
-      return fields[IDX_DESCRIPTION];
+      String amount = fields[IDX_DESCRIPTION].replace("\"", "");
+      return amount;
    }
 
    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
@@ -67,10 +67,14 @@ public class ParserNykredit extends ParserBase {
    protected boolean includeLineInOutput(String[] line) {
       boolean include = false;
       String l = line[0].replace("\"", "");
-      if (!(l.startsWith("Dato")) && !(l.startsWith("Konto"))&& !(l.startsWith("Data"))) {
+      if (!(l.startsWith("Dato")) && !(l.startsWith("Konto")) && !(l.startsWith("Data"))) {
          include = super.includeLineInOutput(line);
       }
       return include;
+   }
+
+   public String getEncoding() {
+      return ENCODING;
    }
 
 }

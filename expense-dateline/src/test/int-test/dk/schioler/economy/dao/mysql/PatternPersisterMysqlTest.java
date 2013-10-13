@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import dk.schioler.economy.model.Account;
+import dk.schioler.economy.model.Account.Type;
 import dk.schioler.economy.model.Pattern;
 import dk.schioler.economy.model.User;
 import dk.schioler.economy.persister.AccountPersister;
@@ -46,18 +47,13 @@ public class PatternPersisterMysqlTest {
             u = user;
          }
 
-         Account account = accPersister.getAccount(u.getId(), "", accName);
-         if (account == null) {
-            a = new Account(null, null, u.getId(), accName, "", 0, true, true, null);
-            a = accPersister.createAccount(a);
-         } else {
-            a = account;
-         }
+         a = new Account(null, Account.ROOT, u.getId(), accName, Type.NON_REGULAR, null);
+         a = accPersister.createAccount(a);
 
-         Pattern pattern1 = new Pattern(null, a.getId(), "ilva", a.getFullPath());
+         Pattern pattern1 = new Pattern(null, u.getId(), a.getId(), "ilva", a.getFullPath());
          Pattern createPattern = persister.createPattern(a.getId(), pattern1);
          LOG.debug(createPattern);
-         Pattern pattern2 = new Pattern(null, a.getId(), "silva", a.getFullPath());
+         Pattern pattern2 = new Pattern(null, u.getId(), a.getId(), "silva", a.getFullPath());
          createPattern = persister.createPattern(a.getId(), pattern2);
          LOG.debug(createPattern);
 

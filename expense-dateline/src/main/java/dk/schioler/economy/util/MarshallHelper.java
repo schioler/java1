@@ -10,34 +10,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
 
-import dk.schioler.economy.accountparser.schema.AccountParserType;
+import dk.schioler.economy.expenseparser.schema.ExpenseParserConfigType;
 
 @Component("marshallHelper")
 public class MarshallHelper {
 
-	@Autowired
-	private Unmarshaller unmarshaller;
+   @Autowired
+   private Unmarshaller unmarshaller;
 
-	public MarshallHelper() {
-		super();
-		System.out.println("MarshallHelper.MarshallHelper()");
-	}
+   public MarshallHelper() {
+      super();
+      // System.out.println("MarshallHelper.MarshallHelper()");
+   }
 
-	@SuppressWarnings("unchecked")
-	public AccountParserType loadUserConfig(String file) throws IOException {
-		FileInputStream is = null;
-		AccountParserType rv = null;
-		try {
-			is = new FileInputStream(file);
-			JAXBElement<AccountParserType> jb = (JAXBElement<AccountParserType>) this.unmarshaller
-					.unmarshal(new StreamSource(is));
+   @SuppressWarnings("unchecked")
+   public ExpenseParserConfigType loadUserConfig(String file) throws IOException {
+      FileInputStream is = null;
+      ExpenseParserConfigType rv = null;
+      try {
+         is = new FileInputStream(file);
+         JAXBElement<ExpenseParserConfigType> jb = (JAXBElement<ExpenseParserConfigType>) this.unmarshaller.unmarshal(new StreamSource(is));
 
-			rv = jb.getValue();
-		} finally {
-			if (is != null) {
-				is.close();
-			}
-		}
-		return rv;
-	}
+         rv = jb.getValue();
+      } finally {
+         if (is != null) {
+            is.close();
+         }
+      }
+      return rv;
+   }
 }

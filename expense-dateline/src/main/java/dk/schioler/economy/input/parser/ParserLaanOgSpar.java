@@ -1,8 +1,6 @@
-package dk.schioler.economy.in.parser;
+package dk.schioler.economy.input.parser;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,6 +9,8 @@ import java.util.Locale;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
+
+import dk.schioler.economy.util.Util;
 
 @Component("parserLaanOgSpar")
 public class ParserLaanOgSpar extends ParserBase {
@@ -23,27 +23,26 @@ public class ParserLaanOgSpar extends ParserBase {
    static final int IDX_DATE = 1;
    static final int IDX_DESCRIPTION = 2;
    static final int IDX_AMOUNT = 3;
+
    // NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("da",
    // "DK"));
-   NumberFormat nf = NumberFormat.getNumberInstance(new Locale("da", "DK"));
-   DecimalFormat df = (DecimalFormat) nf;
+   //   NumberFormat nf = NumberFormat.getNumberInstance(new Locale("da", "DK"));
+   //   DecimalFormat df = (DecimalFormat) nf;
 
    @Override
    protected String getSeparator() {
       return separator;
    }
 
+   private final Locale dkLocale = new Locale("da", "DK");
+
    @Override
    protected BigDecimal getAmount(String[] fields) {
       String amount = fields[IDX_AMOUNT];
       amount = StringUtils.remove(amount, "\"");
-      // LOG.debug("amount=" + amount);
       BigDecimal bd = null;
       try {
-         Number parse = df.parse(amount);
-         // df.
-         bd = new BigDecimal(parse.floatValue());
-         // bd.
+         bd = Util.createBigDecimal(amount, dkLocale);
       } catch (ParseException e) {
          LOG.error(e);
       }
@@ -78,5 +77,11 @@ public class ParserLaanOgSpar extends ParserBase {
          include = super.includeLineInOutput(line);
       }
       return include;
+   }
+
+   static final String LSB_ENCODING = "ISO-8859-1";
+
+   public String getEncoding() {
+      return LSB_ENCODING;
    }
 }

@@ -18,13 +18,14 @@ public class VisitorInsertAccount implements Visitor {
       this.user = user;
    }
 
-   public boolean visit(Account element) {
-      LOG.debug("Visit to:" + element);
+   public boolean visit(Account host) {
+      LOG.debug("Visit to:" + host);
       boolean success = true;
       try {
-         Account account = element ;
-         Account account2 = accountPersister.createAccount(account);
-         LOG.debug(account2);
+         if (!Account.ROOT_NAME.equals(host.getName())) {
+            Account account2 = accountPersister.createAccount(host);
+            LOG.debug("Persisted:" + account2);
+         }
       } catch (Exception e) {
          LOG.error(e.getMessage(), e);
          success = false;
