@@ -16,6 +16,11 @@ Flyt summering til venstre, lige efter kontoliste
 Create a sum-of-all field: total on all categories etc
 Create excel writer.
 
+Report:
+monthly fee, for covering regular expenses, incl. status on every month: with monthly fee, paid, how is the cashamount on the account.
+present as bar-graph and csv file
+
+
 *************************************
 Chart:
 - One account with total/reg/nonreg/extra + average
